@@ -33,9 +33,9 @@ if(${WITH_SNOPT_INTERFACE})
     add_definitions(-DPSOPT_RELEASE_STRING="${PSOPT_VERSION}" -DHAVE_CSTDDEF -DUSE_SNOPT)
 endif()
 
-if(${BUILD_EXAMPLES})
+#if(${BUILD_EXAMPLES})
 	add_subdirectory(examples/)
-endif()
+    #endif()
 
 # set(CMAKE_CXX_FLAGS "-g")
 

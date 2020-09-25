@@ -151,7 +151,8 @@ void dae(adouble* derivatives, adouble* path, adouble* states,
    // cout << derivatives[5] << "\n";
    derivatives[7] = V * sin(psi);
 
-    static adouble* ypathpt;
+    static adouble* ypathpt = new adouble(0);
+    
     smooth_linear_interpolation(ypathpt, xr, xPath, yPath, 7);
     
    path[0] = yr - *ypathpt;
@@ -256,7 +257,7 @@ int main(void)
     problem.phases(1).ncontrols 				= 3;
     problem.phases(1).nevents   				= 16;
     problem.phases(1).npath     				= 1;
-    int nodes = 10;
+    int nodes = 30;
     problem.phases(1).nodes           << nodes;
 
     psopt_level2_setup(problem, algorithm);
@@ -328,8 +329,8 @@ int main(void)
     problem.phases(1).bounds.lower.EndTime      = 3.;
     problem.phases(1).bounds.upper.EndTime      = 6.;
 
-    problem.phases(1).bounds.lower.path(0) = 0.;
-    problem.phases(1).bounds.upper.path(0) = 10000;
+    problem.phases(1).bounds.lower.path(0) = -10000.;
+    problem.phases(1).bounds.upper.path(0) = 0;
 ////////////////////////////////////////////////////////////////////////////
 ///////////////////  Register problem functions  ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -362,8 +363,9 @@ int main(void)
     problem.phases(1).guess.controls       = zeros(3, nodes);
     problem.phases(1).guess.states         = x0;
     problem.phases(1).guess.time           = linspace(0.0, 3.0, nodes);
-xPath << -100., 0., 1., 2., 3., 4., 100;
-yPath << 0., 0., 1., 2., 3., 3., 3;
+
+    xPath << -100., 0., 1., 2., 3., 4., 100;
+    yPath << 0.5, 0.5, 1., 2., 4.5, 4.5, 4.5;
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -407,13 +409,15 @@ yPath << 0., 0., 1., 2., 3., 3., 3;
     plot(t,x,problem.name + ": states", "time (s)", "states", "x1 x2 x3 x4");
 
     plot(t,u,problem.name + ": controls", "time (s)", "controls", "u1 u2");
+    const MatrixXd xs = x.row(6);
+    const MatrixXd ys = x.row(7);
+    plot(xs, ys, problem.name, "x", "y", "x y");
 
+    //plot(t,x,problem.name + ": states", "time (s)", "states", "x1 x2 x3 x4",
+      //                            "pdf", "twolinkarm_states.pdf");
 
-    plot(t,x,problem.name + ": states", "time (s)", "states", "x1 x2 x3 x4",
-                                  "pdf", "twolinkarm_states.pdf");
-
-    plot(t,u,problem.name + ": controls", "time (s)", "controls", "u1 u2",
-                              "pdf", "twolinkarm_controls.pdf");
+  //  plot(t,u,problem.name + ": controls", "time (s)", "controls", "u1 u2",
+    //                          "pdf", "twolinkarm_controls.pdf");
 
 
 }
