@@ -14,6 +14,8 @@ const adouble fwheel_radius = 0.272;
 const adouble front_wheel_kT = 1.2975;
 const adouble rear_wheel_kT = 0.956;
 
+MatrixXd xPath(1, 7);
+MatrixXd yPath(1, 7);
 
 adouble psid_eqn(adouble& phi, adouble& V, adouble& delta) {
     return -(V*sin(delta))/(wheelbase*cos(delta)*cos(phi));
@@ -148,6 +150,11 @@ void dae(adouble* derivatives, adouble* path, adouble* states,
    derivatives[6] = V * cos(psi);
    // cout << derivatives[5] << "\n";
    derivatives[7] = V * sin(psi);
+
+    static adouble* ypathpt;
+    smooth_linear_interpolation(ypathpt, xr, xPath, yPath, 7);
+    
+   path[0] = yr - *ypathpt;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -248,7 +255,7 @@ int main(void)
     problem.phases(1).nstates   				= 8;
     problem.phases(1).ncontrols 				= 3;
     problem.phases(1).nevents   				= 16;
-    problem.phases(1).npath     				= 0;
+    problem.phases(1).npath     				= 1;
     int nodes = 10;
     problem.phases(1).nodes           << nodes;
 
@@ -308,9 +315,9 @@ int main(void)
     problem.phases(1).bounds.lower.events(10) = 0.0;
     problem.phases(1).bounds.lower.events(11) = 1.0;
     problem.phases(1).bounds.lower.events(12) = 0.0;
-    problem.phases(1).bounds.lower.events(13) = 0.0;
+    problem.phases(1).bounds.lower.events(13) = M_PI/2;
     problem.phases(1).bounds.lower.events(14) = 4.0;
-    problem.phases(1).bounds.lower.events(15) = 0.0;
+    problem.phases(1).bounds.lower.events(15) = 4.0;
 
     problem.phases(1).bounds.upper.events = problem.phases(1).bounds.lower.events;
 
@@ -321,7 +328,8 @@ int main(void)
     problem.phases(1).bounds.lower.EndTime      = 3.;
     problem.phases(1).bounds.upper.EndTime      = 6.;
 
-
+    problem.phases(1).bounds.lower.path(0) = 0.;
+    problem.phases(1).bounds.upper.path(0) = 10000;
 ////////////////////////////////////////////////////////////////////////////
 ///////////////////  Register problem functions  ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -354,6 +362,9 @@ int main(void)
     problem.phases(1).guess.controls       = zeros(3, nodes);
     problem.phases(1).guess.states         = x0;
     problem.phases(1).guess.time           = linspace(0.0, 3.0, nodes);
+xPath << -100., 0., 1., 2., 3., 4., 100;
+yPath << 0., 0., 1., 2., 3., 3., 3;
+
 
 ////////////////////////////////////////////////////////////////////////////
 ///////////////////  Enter algorithm options  //////////////////////////////
